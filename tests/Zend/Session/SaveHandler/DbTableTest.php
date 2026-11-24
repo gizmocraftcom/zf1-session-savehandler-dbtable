@@ -21,6 +21,9 @@
  */
 
 
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Unit testing for Zend_Session_SaveHandler_DbTable include all tests for
  * regular session handling
@@ -30,9 +33,9 @@
  * @subpackage UnitTests
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @group      Zend_Session
- * @group      Zend_Db_Table
  */
+#[Group('Zend_Session')]
+#[Group('Zend_Db_Table')]
 class Zend_Session_SaveHandler_DbTableTest extends PHPUnit\Framework\TestCase
 {
     /**
@@ -97,9 +100,7 @@ class Zend_Session_SaveHandler_DbTableTest extends PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @doesNotPerformAssertions
-     */
+    #[DoesNotPerformAssertions]
     public function testConfigPrimaryAssignmentFullConfig()
     {
         $this->_usedSaveHandlers[] = $saveHandler = new Zend_Session_SaveHandler_DbTable($this->_saveHandlerTableConfig);
@@ -118,9 +119,7 @@ class Zend_Session_SaveHandler_DbTableTest extends PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @doesNotPerformAssertions
-     */
+    #[DoesNotPerformAssertions]
     public function testTableNameSchema()
     {
         $config                    = $this->_saveHandlerTableConfig;
@@ -152,9 +151,7 @@ class Zend_Session_SaveHandler_DbTableTest extends PHPUnit\Framework\TestCase
          */
     }
 
-    /**
-     * @doesNotPerformAssertions
-     */
+    #[DoesNotPerformAssertions]
     public function testPrimaryAssignmentNotArray()
     {
         $config            = $this->_saveHandlerTableConfig;
@@ -209,9 +206,7 @@ class Zend_Session_SaveHandler_DbTableTest extends PHPUnit\Framework\TestCase
         $this->_usedSaveHandlers[] = $saveHandler = new Zend_Session_SaveHandler_DbTable($config);
     }
 
-    /**
-     * @doesNotPerformAssertions
-     */
+    #[DoesNotPerformAssertions]
     public function testEmptyPrimaryAssignment()
     {
         //test the default - no primaryAssignment
@@ -329,6 +324,44 @@ class Zend_Session_SaveHandler_DbTableTest extends PHPUnit\Framework\TestCase
         }
     }
 
+    public function testSessionHandlerInterfacesAreImplemented()
+    {
+        $config = $this->_saveHandlerTableConfig;
+        unset($config[Zend_Session_SaveHandler_DbTable::PRIMARY_ASSIGNMENT]);
+        $config['primary'] = array($config['primary'][0]);
+        $this->_setupDb($config['primary']);
+        $this->_usedSaveHandlers[] = $saveHandler = new Zend_Session_SaveHandler_DbTable($config);
+        $this->assertInstanceOf(SessionHandlerInterface::class, $saveHandler);
+        $this->assertInstanceOf(SessionIdInterface::class, $saveHandler);
+        $this->assertInstanceOf(SessionUpdateTimestampHandlerInterface::class, $saveHandler);
+    }
+    public function testCreateSidReturnsValidUniqueIds()
+    {
+        $config = $this->_saveHandlerTableConfig;
+        unset($config[Zend_Session_SaveHandler_DbTable::PRIMARY_ASSIGNMENT]);
+        $config['primary'] = array($config['primary'][0]);
+        $this->_setupDb($config['primary']);
+        $this->_usedSaveHandlers[] = $saveHandler = new Zend_Session_SaveHandler_DbTable($config);
+        $first                     = $saveHandler->create_sid();
+        $second                    = $saveHandler->create_sid();
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{22,256}$/', $first);
+        $this->assertNotSame($first, $second);
+    }
+    public function testValidateIdAndUpdateTimestamp()
+    {
+        $config = $this->_saveHandlerTableConfig;
+        unset($config[Zend_Session_SaveHandler_DbTable::PRIMARY_ASSIGNMENT]);
+        $config['primary']  = array($config['primary'][0]);
+        $config['lifetime'] = 100;
+        $this->_setupDb($config['primary']);
+        $this->_usedSaveHandlers[] = $saveHandler = new Zend_Session_SaveHandler_DbTable($config);
+        $id                        = '242';
+        $this->assertFalse($saveHandler->validateId($id));
+        $this->assertTrue($saveHandler->write($id, 'abc'));
+        $this->assertTrue($saveHandler->validateId($id));
+        $this->assertTrue($saveHandler->updateTimestamp($id, 'abc'));
+        $this->assertSame('abc', $saveHandler->read($id));
+    }
     public function testReadWrite()
     {
         $config = $this->_saveHandlerTableConfig;
@@ -397,7 +430,7 @@ class Zend_Session_SaveHandler_DbTableTest extends PHPUnit\Framework\TestCase
 
         sleep(2);
 
-        $this->assertSame(false, unserialize($saveHandler->read($id)));
+        $this->assertSame('', $saveHandler->read($id));
     }
 
     public function testReadWriteThreeTimesAndGc()
@@ -462,9 +495,7 @@ class Zend_Session_SaveHandler_DbTableTest extends PHPUnit\Framework\TestCase
         $this->assertSame(27, $saveHandler->getLifetime());
     }
 
-    /**
-     * @doesNotPerformAssertions
-     */
+    #[DoesNotPerformAssertions]
     public function testZendConfig()
     {
         $this->_usedSaveHandlers[] = $saveHandler = new Zend_Session_SaveHandler_DbTable(new Zend_Config($this->_saveHandlerTableConfig));
@@ -473,9 +504,7 @@ class Zend_Session_SaveHandler_DbTableTest extends PHPUnit\Framework\TestCase
          */
     }
 
-    /**
-     * @group 9294
-     */
+    #[Group('9294')]
     public function testDestroyWithAutoQuoteIdentifiersEnabledAndDisabled()
     {
         $id       = uniqid();
@@ -517,9 +546,7 @@ class Zend_Session_SaveHandler_DbTableTest extends PHPUnit\Framework\TestCase
         $this->assertStringContainsString($partQueryExpected, $lastQuery);
     }
 
-    /**
-     * @group 9294
-     */
+    #[Group('9294')]
     public function testGcWithAutoQuoteIdentifiersEnabledAndDisabled()
     {
         $config   = $this->_saveHandlerTableConfig;

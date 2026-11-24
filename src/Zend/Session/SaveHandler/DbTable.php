@@ -29,7 +29,7 @@
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Session_SaveHandler_DbTable extends Zend_Db_Table_Abstract implements Zend_Session_SaveHandler_Interface
+class Zend_Session_SaveHandler_DbTable extends Zend_Db_Table_Abstract implements Zend_Session_SaveHandler_Interface, SessionIdInterface, SessionUpdateTimestampHandlerInterface
 {
     const PRIMARY_ASSIGNMENT                   = 'primaryAssignment';
     const PRIMARY_ASSIGNMENT_SESSION_SAVE_PATH = 'sessionSavePath';
@@ -346,6 +346,49 @@ class Zend_Session_SaveHandler_DbTable extends Zend_Db_Table_Abstract implements
         }
 
         return $return;
+    }
+
+    /**
+     * Create a new session id
+     *
+     * Required by SessionIdInterface since PHP 8.6 (the interface will be required in PHP 9.0).
+     * The id is a lowercase hexadecimal string, which is valid for every session.sid_bits_per_character setting.
+     *
+     * @return string
+     */
+    public function create_sid(): string
+    {
+        $length = (int) ini_get('session.sid_length');
+        if ($length < 22 || $length > 256) {
+            $length = 32;
+        }
+
+        return substr(bin2hex(random_bytes((int) ceil($length / 2))), 0, $length);
+    }
+
+    /**
+     * Check whether a non-expired session with the given id exists (used by session.use_strict_mode)
+     *
+     * @param string $id
+     * @return boolean
+     */
+    public function validateId($id): bool
+    {
+        $rows = call_user_func_array(array(&$this, 'find'), $this->_getPrimary($id));
+
+        return count($rows) > 0 && $this->_getExpirationTime($rows->current()) > time();
+    }
+
+    /**
+     * Update the modification time of a session without changing its data (session.lazy_write)
+     *
+     * @param string $id
+     * @param string $data
+     * @return boolean
+     */
+    public function updateTimestamp($id, $data): bool
+    {
+        return $this->write($id, $data);
     }
 
     /**

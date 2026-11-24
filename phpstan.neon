@@ -16,7 +16,3 @@ parameters:
         -
             message: '#Parameter \#2 \$str(ing)? of function explode expects string, string\|null given\.#'
             path: ./src/Zend/Session/SaveHandler/DbTable.php
-        # THis appears to be intentional
-        -
-            message: '#Do-while loop condition is always false\.#'
-            path: ./src/Zend/Session/SaveHandler/DbTable.php

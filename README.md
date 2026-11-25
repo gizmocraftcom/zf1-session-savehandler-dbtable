@@ -1,7 +1,6 @@
 Zend Framework 1 - Session_SaveHandler_DbTable
 ============================
 [![Build](https://github.com/gizmocraftcom/zf1-session-savehandler-dbtable/workflows/Build/badge.svg?event=push)](https://github.com/gizmocraftcom/zf1-session-savehandler-dbtable/actions?query=workflow%3ABuild+event%3Apush)
-[![codecov](https://codecov.io/gh/gizmocraftcom/zf1-session-savehandler-dbtable/branch/master/graph/badge.svg)](https://codecov.io/gh/gizmocraftcom/zf1-session-savehandler-dbtable)
 [![Latest Stable Version](https://poser.pugx.org/gizmocraft/zendframework1-session-savehandler-dbtable/v/stable)](https://packagist.org/packages/gizmocraft/zendframework1-session-savehandler-dbtable)
 [![Total Downloads](https://poser.pugx.org/gizmocraft/zendframework1-session-savehandler-dbtable/downloads)](https://packagist.org/packages/gizmocraft/zendframework1-session-savehandler-dbtable)
 [![License](https://poser.pugx.org/gizmocraft/zendframework1-session-savehandler-dbtable/license)](https://packagist.org/packages/gizmocraft/zendframework1-session-savehandler-dbtable)
